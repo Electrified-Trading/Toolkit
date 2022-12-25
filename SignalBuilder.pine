@@ -32,8 +32,8 @@ export newArray() =>
 // @returns true if the condition was true; otherwise false.
 export add(
   Signal[] collection,
-  float value,
   string description,
+  float value,
   bool condition = true,
   string group = na) =>
     if condition
@@ -47,7 +47,35 @@ export add(
 // @returns true if the condition was true; otherwise false.
 export addWarning(
   Signal[] collection,
-  float value,
   string description,
+  float value,
   bool condition = true) =>
-    add(collection, value, description, condition, "Warning")
+    add(collection, description, value, condition, "Warning")
+
+
+// @function Adds a new Signal to a Signal array only if the value is positive.
+// @param value The value of the signal.
+// @param description The description of the signal.
+// @returns true if the signal was added; otherwise false.
+export addPosOnly(
+  Signal[] collection,
+  string description,
+  float value,
+  float multiple = 1,
+  string group = na) =>
+    v = value * multiple
+    add(collection, description, v, v>0, group=group)
+
+// @function Adds a new Signal to a Signal array only if the value is negative.
+// @param value The value of the signal.
+// @param description The description of the signal.
+// @returns true if the signal was added; otherwise false.
+export addNegOnly(
+  Signal[] collection,
+  string description,
+  float value,
+  float multiple = 1,
+  string group = na) =>
+    v = value * multiple
+    add(collection, description, v, v<0, group=group)
+
