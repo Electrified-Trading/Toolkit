@@ -1,0 +1,53 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Electrified
+
+//@version=5
+
+// @description Utility for building a collection of signal values and displaying them.
+library("SignalBuilder", true)
+
+export type Signal
+	float value // The signal value
+	string description // The signal description
+	string group // A value that can be used to group signals.
+
+// @function Creates a Signal object.
+// @param value The value of the signal.
+// @param description The description of the signal.
+// @param group A value representing what group the signal belongs to.
+// @returns The constructed Signal.
+export create(float value, string description, string group = na) =>
+    Signal.new(value, description, group)
+
+// @function Creates an empty array of Signal objects.
+// @returns The new array.
+export newArray() =>
+	array.new<Signal>()
+
+// @function Adds a new Signal to a Signal array.
+// @param value The value of the signal.
+// @param description The description of the signal.
+// @param condition An optional boolean value that will decide if the signal is added or not.
+// @param group A value representing what group the signal belongs to.
+// @returns true if the condition was true; otherwise false.
+export add(
+  Signal[] collection,
+  float value,
+  string description,
+  bool condition = true,
+  string group = na) =>
+    if condition
+        array.push(collection, Signal.new(value, description, group))
+    condition
+
+// @function Adds a new Signal to a Signal array under the "Warning" group.
+// @param value The value of the signal.
+// @param description The description of the signal.
+// @param condition An optional boolean value that will decide if the signal is added or not.
+// @returns true if the condition was true; otherwise false.
+export addWarning(
+  Signal[] collection,
+  float value,
+  string description,
+  bool condition = true) =>
+    add(collection, value, description, condition, "Warning")
