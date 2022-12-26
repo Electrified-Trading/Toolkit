@@ -212,7 +212,7 @@ export build(Table tbl) =>
         numColumns := math.max(numColumns, array.size(row.cells))
 
     // Create the table in PineScript
-    pineTable = table.new(0, numColumns, numRows, tbl.style.bgColor, tbl.style.frame.color, tbl.style.frame.width, tbl.style.border.color, tbl.style.border.width)
+    pineTable = table.new(tbl.position, numColumns, numRows, tbl.style.bgColor, tbl.style.frame.color, tbl.style.frame.width, tbl.style.border.color, tbl.style.border.width)
 
     // Iterate through the columns and set their styles
     for i = 0 to numColumns - 1
@@ -237,21 +237,22 @@ export build(Table tbl) =>
             if not na(cell)
                 if not na(cell.style)
                     if not na(cell.style.bgColor)
-                        table.set_cell_bgcolor(pineTable, i, j, cell.style.bgColor)
+                        table.cell_set_bgcolor(pineTable, i, j, cell.style.bgColor)
                     if not na(cell.style.font)
-                        table.set_cell_textcolor(pineTable, i, j, cell.style.font.color)
-                        table.set_cell_textsize(pineTable, i, j, cell.style.font.size)
-                        table.set_cell_halign(pineTable, i, j, cell.style.hAlign)
-                        table.set_cell_valign(pineTable, i, j, cell.style.vAlign)
+                        table.cell_set_textcolor(pineTable, i, j, cell.style.font.color)
+                        table.cell_set_textsize(pineTable, i, j, cell.style.font.size)
+                        table.cell_set_halign(pineTable, i, j, cell.style.hAlign)
+                        table.cell_set_valign(pineTable, i, j, cell.style.vAlign)
                 if not na(cell.width)
-                    table.set_cell_width(pineTable, i, j, cell.width)
+                    table.cell_set_width(pineTable, i, j, cell.width)
                 if not na(cell.height)
-                    table.set_cell_height(pineTable, i, j, cell.height)
+                    table.cell_set_height(pineTable, i, j, cell.height)
                 if not na(cell.tooltip)
-                    table.set_cell_tooltip(pineTable, i, j, cell.tooltip)
+                    table.cell_set_tooltip(pineTable, i, j, cell.tooltip)
                 if not na(cell.contents)
-                    table.set_cell_text(pineTable, i, j, cell.contents)
+                    table.cell_set_text(pineTable, i, j, cell.contents)
 
+	pineTable
 
 //////////////////////////////////////////////////
 //// Demo ////////////////////////////////////////
