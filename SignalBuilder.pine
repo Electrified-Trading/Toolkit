@@ -1,48 +1,183 @@
 // This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © Electrified
 
-//@version=5
+// @version=5
 
 // @description Utility for building a collection of signal values and displaying them.
 library("SignalBuilder", true)
 
+////////////////////////////////////////////////////////////////
+// @description An object for holding signal details.
 export type Signal
-	float value // The signal value
-	string description // The signal description
-	string group // A value that can be used to group signals.
+	// The signal value
+	float value
+	// The signal description
+	string description
+	// A value that can be used to group signals.
+	string group
 
-// @function Creates a Signal object.
-// @param value The value of the signal.
-// @param description The description of the signal.
-// @param group A value representing what group the signal belongs to.
-// @returns The constructed Signal.
-export create(float value, string description, string group = na) =>
-    Signal.new(value, description, group)
+////////////////////////////////////////////////////////////////
+// @description An object for holding a group of signal details.
+export type SignalGroup
+	// The signal group value/name.
+	string group
+	// The grouped signals.
+	Signal[] signals
+    // A color related to this group.
+    color color
+    // An optional symbol related to this group.
+    string symbol
 
+////////////////////////////////////////////////////////////////
 // @function Creates an empty array of Signal objects.
 // @returns The new array.
 export newArray() =>
 	array.new<Signal>()
 
-// @function Adds a new Signal to a Signal array.
+////////////////////////////////////////////////////////////////
+// @function Creates a new SignalGroup object with a given name and an empty array of Signal objects.
+// @param name The group value/name.
+// @param color An optional color for the group.
+// @param symbol An optional symbol for the group.
+// @returns The new SignalGroup object.
+export newGroup(string name, color color = na, string symbol = na) =>
+	SignalGroup.new(name, newArray(), color, symbol)
+
+////////////////////////////////////////////////////////////////
+// @function Searches through an array of SignalGroup objects and returns the index of the first group whose group value matches the provided group value.
+// @param signals The array of SignalGroup objects to search through.
+// @param group The group value to search for.
+// @returns The index of the matching group, or -1 if no matching group is found.
+export indexOfGroup(
+  SignalGroup[] signals,
+  string group) =>
+	size = array.size(signals)
+	index = -1
+	i = 0
+	while i < size and index == -1
+		s = array.get(signals, i)
+		g = s.group
+		if g == group or na(group) and na(g)
+			index := i
+		i += 1
+	index
+
+////////////////////////////////////////////////////////////////
+// @function Ensures that a SignalGroup with a given group value exists in an array of SignalGroup objects, and returns it. If a group with the given value does not exist, a new SignalGroup is created and added to the array.
+// @param signals The array of SignalGroup objects to search through.
+// @param group The group value to search for or create.
+// @returns The matching or newly-created SignalGroup object.
+export registerGroup(
+  SignalGroup[] signals,
+  string group) =>
+	i = indexOfGroup(signals, group)
+	// Ensure the group.
+	if i == -1
+		g = newGroup(group)
+		array.push(signals, g)
+		g
+	else
+		array.get(signals, i)
+
+////////////////////////////////////////////////////////////////
+// @function Groups an array of Signal objects by their group value.
+// @param signals The array of Signal objects to group.
+// @returns An array of SignalGroup objects, grouping the signals by their group value.
+export group(Signal[] signals) =>
+	// Initialize the grouping.
+	result = array.new<SignalGroup>()
+
+	// Loop through all the signals.	
+	for signal in signals	   
+		group = registerGroup(result, signal.group)
+		array.push(group.signals, signal)
+
+	result
+
+////////////////////////////////////////////////////////////////
+// @function Creates a new Signal object with a given value, description, and group value.
 // @param value The value of the signal.
 // @param description The description of the signal.
+// @param group A value representing what group the signal belongs to.
+// @returns The constructed Signal object.
+export create(
+  float value,
+  string description,
+  string group = na) =>
+	Signal.new(value, description, group)
+
+////////////////////////////////////////////////////////////////
+// @function Adds a new Signal object to a given Signal array, with a given value, description, and group value.
+// @param collection The Signal array to add the new Signal object to.
+// @param description The description of the signal.
+// @param value The value of the signal.
 // @param condition An optional boolean value that will decide if the signal is added or not.
 // @param group A value representing what group the signal belongs to.
 // @returns true if the condition was true; otherwise false.
 export add(
   Signal[] collection,
   string description,
-  float value,
+  float value = na,
   bool condition = true,
   string group = na) =>
-    if condition
-        array.push(collection, Signal.new(value, description, group))
-    condition
+	if condition
+		array.push(collection, Signal.new(value, description, group))
+	condition
 
-// @function Adds a new Signal to a Signal array under the "Warning" group.
-// @param value The value of the signal.
+////////////////////////////////////////////////////////////////
+// @function Adds a new Signal object to a SignalGroup.
+// @param group The SignalGroup object to add the Signal object to.
 // @param description The description of the signal.
+// @param value The value of the signal. If not provided, the value will be set to `na`.
+// @param condition A boolean condition that determines whether the signal will be added to the group. If not provided, the default value is `true`.
+// @returns The constructed Signal object.
+export add(
+  SignalGroup group,
+  string description,
+  float value = na,
+  bool condition = true) =>
+	add(group.signals, description, value, condition, group.group)
+
+////////////////////////////////////////////////////////////////
+// @function Adds a new Signal object to a given array of SignalGroup objects, with a given value, description, and group value.
+// @param collection The array of SignalGroup objects to add the new Signal object to.
+// @param description The description of the signal.
+// @param value The value of the signal.
+// @param condition An optional boolean value that will decide if the signal is added or not.
+// @param group A value representing what group the signal belongs to.
+// @returns true if the condition was true; otherwise false.
+export add(
+  SignalGroup[] collection,
+  string description,
+  float value = na,
+  bool condition = true,
+  string group = na) =>
+	if condition
+		g = registerGroup(collection, group)
+		array.push(g.signals, Signal.new(value, description, group))
+	condition
+
+////////////////////////////////////////////////////////////////
+// @function Adds a new SignalGroup object to an array of SignalGroup objects.
+// @param collection The array of SignalGroup objects to add the new SignalGroup object to.
+// @param group The group value/name of the SignalGroup object.
+// @param color An optional color for the group.
+// @param symbol An optional symbol for the group.
+// @returns The constructed SignalGroup object.
+export addGroup(
+  SignalGroup[] collection,
+  string group,
+  color color = na,
+  string symbol = na) =>
+	g = SignalGroup.new(group, array.new<Signal>(), color, symbol)
+	array.push(collection, g)
+	g
+
+////////////////////////////////////////////////////////////////
+// @function Adds a new Signal object to a given Signal array under the "Warning" group, with a given value and description.
+// @param collection The Signal array to add the new Signal object to.
+// @param description The description of the signal.
+// @param value The value of the signal.
 // @param condition An optional boolean value that will decide if the signal is added or not.
 // @returns true if the condition was true; otherwise false.
 export addWarning(
@@ -50,32 +185,173 @@ export addWarning(
   string description,
   float value,
   bool condition = true) =>
+	add(collection, description, value, condition, "Warning")
+
+////////////////////////////////////////////////////////////////
+// @function Adds a new Signal object to a given array of SignalGroup objects under the "Warning" group, with a given value and description.
+// @param collection The array of SignalGroup objects to add the new Signal object to.
+// @param description The description of the signal.
+// @param value The value of the signal.
+// @param condition An optional boolean value that will decide if the signal is added or not.
+// @returns true if the condition was true; otherwise false.
+export addWarning(
+  SignalGroup[] collection,
+  string description,
+  float value,
+  bool condition = true) =>
     add(collection, description, value, condition, "Warning")
 
-
-// @function Adds a new Signal to a Signal array only if the value is positive.
-// @param value The value of the signal.
+////////////////////////////////////////////////////////////////
+// @function Adds a new Signal object to a given Signal array, with a given value, description, and group value, but only if the value is positive.
+// @param collection The Signal array to add the new Signal object to.
 // @param description The description of the signal.
-// @returns true if the signal was added; otherwise false.
+// @param value The value of the signal.
+// @param group A value representing what group the signal belongs to.
+// @returns true if the value was positive and the signal was added; otherwise false.
 export addPosOnly(
   Signal[] collection,
   string description,
   float value,
-  float multiple = 1,
   string group = na) =>
-    v = value * multiple
-    add(collection, description, v, v>0, group=group)
+    add(collection, description, value, value > 0, group)
 
-// @function Adds a new Signal to a Signal array only if the value is negative.
-// @param value The value of the signal.
+////////////////////////////////////////////////////////////////
+// @function Adds a new Signal object to a given Signal array, with a given value, description, and group value, but only if the value is negative.
+// @param collection The Signal array to add the new Signal object to.
 // @param description The description of the signal.
-// @returns true if the signal was added; otherwise false.
+// @param value The value of the signal.
+// @param group A value representing what group the signal belongs to.
+// @returns true if the value was negative and the signal was added; otherwise false.
 export addNegOnly(
   Signal[] collection,
   string description,
   float value,
-  float multiple = 1,
   string group = na) =>
-    v = value * multiple
-    add(collection, description, v, v<0, group=group)
+	add(collection, description, value, value < 0, group)
 
+////////////////////////////////////////////////////////////////
+// @function Adds a new Signal object to a given array of SignalGroup objects, with a given value, description, and group value, but only if the value is positive.
+// @param collection The array of SignalGroup objects to add the new Signal object to.
+// @param description The description of the signal.
+// @param value The value of the signal.
+// @param group A value representing what group the signal belongs to.
+// @returns true if the value was positive and the signal was added; otherwise false.
+export addPosOnly(
+  SignalGroup[] collection,
+  string description,
+  float value,
+  string group = na) =>
+    add(collection, description, value, value > 0, group)
+
+////////////////////////////////////////////////////////////////
+// @function Adds a new Signal object to a given array of SignalGroup objects, with a given value, description, and group value, but only if the value is negative.
+// @param collection The array of SignalGroup objects to add the new Signal object to.
+// @param description The description of the signal.
+// @param value The value of the signal.
+// @param group A value representing what group the signal belongs to.
+// @returns true if the value was negative and the signal was added; otherwise false.
+export addNegOnly(
+  SignalGroup[] collection,
+  string description,
+  float value,
+  string group = na) =>
+    add(collection, description, value, value < 0, group)
+
+////////////////////////////////////////////////////////////////
+digits(float value) =>
+	if na(value)
+		""
+	else
+		a = math.abs(value)
+		v = a < 1 ? 4 : a < 10 ? 3 : 2
+		d = math.pow(10, v)
+		s = str.tostring(math.floor(value * d) / d)
+		value >= 0 ? "+" + s : s
+
+////////////////////////////////////////////////////////////////
+// @function Combines an array of Signal objects into a single Signal object, with the descriptions concatenated and the value being the sum of all values of the Signal objects that have a value. The value of each signal is appended to the end of its description in parenthesis.
+// @param signals The array of Signal objects to combine.
+// @param group An optional group value to set for the combined Signal object.
+// @param prefix An optional prefix to use as a prefix for each line in the resultant description.
+// @returns The combined Signal object.
+export combine(Signal[] signals, string group = na, string prefix = "") =>
+	float value = 0
+	description = ""
+	for signal in signals
+		value += nz(signal.value)
+		if description != ""
+			description += "\n"
+		description += prefix + signal.description
+		if not na(signal.value)
+			description += " (" + digits(signal.value) + ")"
+	Signal.new(value, description, group)
+
+////////////////////////////////////////////////////////////////
+// @function Combines a SignalGroup object into a single Signal object, with the descriptions concatenated and the value being the sum of all values for the group.
+// @param group The SignalGroup object to combine.
+// @returns The combined Signal object.
+export combine(SignalGroup group, bool prefixWithSymbol = false) =>
+	combine(group.signals, group.group, prefixWithSymbol ? group.symbol + "  " : "")
+
+////////////////////////////////////////////////////////////////
+// @function Combines an array of SignalGroup objects into an array of Signal objects, with the descriptions concatenated and the value being the sum of all values for each group.
+// @param groups The array of SignalGroup objects to combine.
+// @returns The array of combined Signal objects.
+export combine(SignalGroup[] groups, bool prefixWithSymbol = false) =>
+	result = array.new<Signal>()
+	for group in groups
+		// Combine the signals within the group.
+		combined = combine(group, prefixWithSymbol)
+		// Add the combined Signal object to the result array.
+		array.push(result, combined)
+	result
+
+////////////////////////////////////////////////////////////////
+// @function Counts the number of signals in an array of SignalGroup objects.
+// @param groups The array of SignalGroup objects to count signals from.
+// @returns The number of signals in the array of SignalGroup objects.
+export countSignals(SignalGroup[] groups) =>
+	count = 0
+	for group in groups
+		for signal in group.signals
+			count += 1
+	count
+
+//// DEMO //////////////////////////////////////////////////////
+groups = array.new<SignalGroup>()
+okGroup = addGroup(groups, "OK", color.green, "✓")
+warnGroup = addGroup(groups, "Warning", color.orange, "⚠") 
+blockGroup = addGroup(groups, "Block", #a92323, "✖") 
+
+var bar = 0
+bar += 1
+
+add(okGroup, "Momentum", +1)
+add(okGroup, "Oversold", +1)
+add(warnGroup, "Unconfirmed")
+add(blockGroup, "Downtrend", -2)
+add(blockGroup, "Below VWAP", -1)
+
+signalCount = countSignals(groups)
+
+// Define the table's header.
+signalDisplay = table.new(position.top_right, 3, signalCount)
+
+row = -1
+
+setupRow(table t, int row, int columns, color color, color textColor = color.white) =>
+	for i = 0 to columns - 1
+		table.cell_set_bgcolor(t, i, row, color)
+		table.cell_set_text_size(t, i, row, size.small)
+		table.cell_set_text_color(t, i, row, textColor)
+		table.cell_set_text_halign(t, i, row, text.align_left)
+
+// Add a row to the table for each SignalGroup in the array.
+for group in groups
+    // Add a row to the table for each Signal in the SignalGroup.
+    for signal in group.signals
+		row += 1
+		setupRow(signalDisplay, row, 3, group.color)
+		table.cell_set_text(signalDisplay, 0, row, group.symbol)
+		table.cell_set_text(signalDisplay, 1, row, signal.description)
+		table.cell_set_text(signalDisplay, 2, row, digits(signal.value))

@@ -1,0 +1,265 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Electrified (electrifiedtrading)
+
+// @version=5
+// @description Utility for creating tables.
+library('TableBuilder', true)
+
+export type TextStyle
+    color color
+    string size
+    string family
+
+export type LineStyle
+    color color
+    int width
+
+export type TableStyle
+    color bgColor
+    string hAlign
+    string vAlign
+    TextStyle font
+    LineStyle border
+    LineStyle frame
+   
+export type Column
+    TableStyle style
+    int width
+    
+export type Cell
+    string contents
+    TableStyle style
+    int width
+    int height
+    string tooltip
+
+export type Row
+    Cell[] cells
+    TableStyle style
+    int height
+
+export type Table
+    string position
+    Column[] columns
+    Row[] rows
+    TableStyle style
+
+//////////////////////////////////////////////////
+// @function Creates a new table with an optional style.
+// @param style The style to use for the table. Defaults to na.
+// @returns The newly created table.
+export create(string position, TableStyle style = na) =>
+    Table.new(position, array.new<Column>(), array.new<Row>(), style)
+
+//////////////////////////////////////////////////
+// @function Determines if two TextStyles are equal.
+// @param style1 The first TextStyle to compare.
+// @param style2 The second TextStyle to compare.
+// @returns True if the two TextStyles are equal, false otherwise.
+export equals(TextStyle style1, TextStyle style2) =>
+    style1.color == style2.color and
+      style1.size == style2.size and
+      style1.family == style2.family
+
+//////////////////////////////////////////////////
+// @function Determines if two LineStyles are equal.
+// @param style1 The first LineStyle to compare.
+// @param style2 The second LineStyle to compare.
+// @returns True if the two LineStyles are equal, false otherwise.
+export equals(LineStyle style1, LineStyle style2) =>
+    style1.color == style2.color and
+      style1.width == style2.width
+
+//////////////////////////////////////////////////
+// @function Determines if two TableStyles are equal.
+// @param style1 The first TableStyle to compare.
+// @param style2 The second TableStyle to compare.
+// @returns True if the two TableStyles are equal, false otherwise.
+export equals(TableStyle style1, TableStyle style2) =>
+    style1.bgColor == style2.bgColor and
+      style1.hAlign == style2.hAlign and
+      style1.vAlign == style2.vAlign and
+      equals(style1.font, style2.font) and
+      equals(style1.border, style2.border) and
+      equals(style1.frame, style2.frame)
+
+//////////////////////////////////////////////////
+// @function Creates a TextStyle with the same property values as the child but inherits properties from the parent if the child property is na.
+// @param child The child TextStyle to inherit to.
+// @param parent The parent TextStyle to inherit from.
+// @returns The inherited child TextStyle.
+export inherit(TextStyle child, TextStyle parent) =>
+    if na(child)
+        parent
+    else if na(parent)
+        child
+    else
+        color = na(child.color) ? parent.color : child.color
+        size = na(child.size) ? parent.size : child.size
+        family = na(child.family) ? parent.family : child.family
+        result = TextStyle.new(color, size, family)
+        equals(child, result) ? child : result
+        
+//////////////////////////////////////////////////
+// @function Creates a LineStyle with the same property values as the child but inherits properties from the parent if the child property is na.
+// @param child The child LineStyle to inherit to.
+// @param parent The parent LineStyle to inherit from.
+// @returns The inherited child LineStyle.
+export inherit(LineStyle child, LineStyle parent) =>
+    if na(child)
+        parent
+    else if na(parent)
+        child
+    else
+        color = na(child.color) ? parent.color : child.color
+        width = na(child.width) ? parent.width : child.width
+        result = LineStyle.new(color, width)
+        equals(child, result) ? child : result
+
+//////////////////////////////////////////////////
+// @function Creates a TableStyle with the same property values as the child but inherits properties from the parent if the child property is na.
+// @param child The child TableStyle to inherit to.
+// @param parent The parent TableStyle to inherit from.
+// @returns The inherited child TableStyle.
+export inherit(TableStyle child, TableStyle parent) =>
+    if na(child)
+        parent
+    else if na(parent)
+        child
+    else
+        bgColor = na(child.bgColor) ? parent.bgColor : child.bgColor
+        hAlign = na(child.hAlign) ? parent.hAlign : child.hAlign
+        vAlign = na(child.vAlign) ? parent.vAlign : child.vAlign
+        font = inherit(child.font, parent.font)
+        border = inherit(child.border, parent.border)
+        frame = inherit(child.frame, parent.frame)
+        result = TableStyle.new(bgColor, hAlign, vAlign, font, border, frame)
+        equals(child, result) ? child : result
+
+//////////////////////////////////////////////////
+// @function Adds a column to a table.
+// @param table The table to add the column to.
+// @param column The column to add to the table.
+export addColumn(Table table, Column column) =>
+    array.push(table.columns, column)
+
+//////////////////////////////////////////////////
+// @function Creates a column and adds it to a table.
+// @param table The table to add the column to.
+// @returns The created column.
+export addColumn(Table table) =>
+    column = Column.new()
+    array.push(table.columns, column)
+    column
+
+//////////////////////////////////////////////////
+// @function Adds a row to a table.
+// @param table The table to add the row to.
+// @param row The row to add to the table.
+export addRow(Table table, Row row) =>
+    array.push(table.rows, row)
+
+//////////////////////////////////////////////////
+// @function Creates a row with a given set of cells and adds it to a table.
+// @param table The table to add the row to.
+// @param cells The cells to include in the row.
+// @returns The created row.
+export addRow(Table table, Cell[] cells) =>
+    row = Row.new(cells)
+    array.push(table.rows, row)
+    row
+
+//////////////////////////////////////////////////
+// @function Creates a row and adds it to a table.
+// @param table The table to add the row to.
+// @returns The created row.
+export addRow(Table table) =>
+	addRow(table, array.new<Cell>())
+
+//////////////////////////////////////////////////
+// @function Adds a cell to a row.
+// @param row The row to add the cell to.
+// @param cell The cell to add to the row.
+export addCell(Row row, Cell cell) =>
+    array.push(row.cells, cell)
+
+//////////////////////////////////////////////////
+// @function Creates a cell and adds it to a row.
+// @param row The row to add the cell to.
+// @param contents The contents of the cell.
+// @param style The style of the cell.
+// @param width The width of the cell.
+// @param height The height of the cell.
+// @param tooltip The tooltip of the cell.
+// @returns The created cell.
+export addCell(Row row, string contents = na, TableStyle style = na, int width = na, int height = na, string tooltip = na) =>
+    cell = Cell.new(contents, style, width, height, tooltip)
+    array.push(row.cells, cell)
+    cell
+
+
+//////////////////////////////////////////////////
+// @function Builds a table in PineScript based on a given Table object.
+// @param table The Table object to use as data for building the table.
+// @returns The created table in PineScript.
+export build(Table tbl) =>
+    // Get the number of rows in the table
+    numRows = array.size(tbl.rows)
+
+    // Get the number of columns in the table by getting the maximum number of cells in any row
+    numColumns = 0
+    for row in tbl.rows
+        numColumns := math.max(numColumns, array.size(row.cells))
+
+    // Create the table in PineScript
+    pineTable = table.new(0, numColumns, numRows, tbl.style.bgColor, tbl.style.frame.color, tbl.style.frame.width, tbl.style.border.color, tbl.style.border.width)
+
+    // Iterate through the columns and set their styles
+    for i = 0 to numColumns - 1
+        if i < array.size(tbl.columns)
+            column = array.get(tbl.columns, i)
+            if not na(column.style)
+                if not na(column.style.bgColor)
+                    table.set_col_bgcolor(pineTable, i, column.style.bgColor)
+                if not na(column.style.font)
+                    table.set_col_textcolor(pineTable, i, column.style.font.color)
+                    table.set_col_textsize(pineTable, i, column.style.font.size)
+                    table.set_col_halign(pineTable, i, column.style.hAlign)
+                    table.set_col_valign(pineTable, i, column.style.vAlign)
+        if not na(column.width)
+            table.set_col_width(pineTable, i, column.width)
+
+    // Iterate through the rows and cells and set their styles
+    for i = 0 to numRows - 1
+        row = array.get(tbl.rows, i)
+        for j = 0 to numColumns - 1
+            cell = array.get(row.cells, j)
+            if not na(cell)
+                if not na(cell.style)
+                    if not na(cell.style.bgColor)
+                        table.set_cell_bgcolor(pineTable, i, j, cell.style.bgColor)
+                    if not na(cell.style.font)
+                        table.set_cell_textcolor(pineTable, i, j, cell.style.font.color)
+                        table.set_cell_textsize(pineTable, i, j, cell.style.font.size)
+                        table.set_cell_halign(pineTable, i, j, cell.style.hAlign)
+                        table.set_cell_valign(pineTable, i, j, cell.style.vAlign)
+                if not na(cell.width)
+                    table.set_cell_width(pineTable, i, j, cell.width)
+                if not na(cell.height)
+                    table.set_cell_height(pineTable, i, j, cell.height)
+                if not na(cell.tooltip)
+                    table.set_cell_tooltip(pineTable, i, j, cell.tooltip)
+                if not na(cell.contents)
+                    table.set_cell_text(pineTable, i, j, cell.contents)
+
+
+//////////////////////////////////////////////////
+//// Demo ////////////////////////////////////////
+//////////////////////////////////////////////////
+tbl = create(position.top_right)
+for i = 1 to 10
+	row = addRow(tbl)
+	addCell(row, str.tostring(i))
+	addCell(row, "Column 2")
+
+build(tbl)
