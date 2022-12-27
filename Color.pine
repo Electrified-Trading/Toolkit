@@ -1,0 +1,51 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Electrified (electrifiedtrading)
+
+// @version=5
+// @description Utility for working with colors.
+library('Color', true)
+
+//////////////////////////////////////////////////
+// @function Determines if two colors are equal.
+// @param a The first color to compare.
+// @param b The second color to compare.
+// @returns True if both colors are equal, false otherwise.
+export equals(color a, color b) =>
+    isAna = na(a)
+    isBna = na(b)
+    if isAna
+        isBna
+    else if isBna
+        false
+    else if color.r(a) != color.r(b)
+        false
+    else if color.g(a) != color.g(b)
+        false
+    else if color.b(a) != color.b(b)
+        false
+    else 
+        color.t(a) == color.t(b)       
+
+//////////////////////////////////////////////////
+// @function Calculates the luminosity of a color using the given red, green, and blue values.
+// @param r The red value of the color, from 0 to 255.
+// @param g The green value of the color, from 0 to 255.
+// @param b The blue value of the color, from 0 to 255.
+// @returns The luminosity of the color, a float between 0 and 1.
+export luminosity(float r, float g, float b) =>
+    (0.299 * r + 0.587 * g + 0.114 * b) / 255
+
+//////////////////////////////////////////////////
+// @function Calculates the luminosity of a color using its red, green, and blue values.
+// @param c The color to calculate the luminosity for.
+// @returns The luminosity of the color, a float between 0 and 1.
+export luminosity(color c) =>
+    luminosity(color.r(c), color.g(c), color.b(c))
+
+//////////////////////////////////////////////////
+// @function Returns a color that is either black or white depending on the luminosity of the given background color. If the background color is na, returns gray.
+// @param bgColor The background color to determine the contrast color for.
+// @returns A color that provides high contrast with the given background color.
+export getContrastColor(color bgColor) =>
+    na(bgColor) ? color.rgb(128, 128, 128) :
+      luminosity(bgColor) > 0.5 ? color.rgb(0, 0, 0) : color.rgb(255, 255, 255) 
