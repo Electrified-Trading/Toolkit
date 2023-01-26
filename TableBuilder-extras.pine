@@ -1,0 +1,171 @@
+
+//////////////////////////////////////////////////
+//// equals //////////////////////////////////////
+//////////////////////////////////////////////////
+
+equals(string a, string b) =>
+    isAna = na(a)
+    isBna = na(b)
+    isAna ? isBna : (isBna ? false : a == b)
+
+equals(float a, float b) =>
+    isAna = na(a)
+    isBna = na(b)
+    isAna ? isBna : (isBna ? false : a == b)
+
+equals(int a, int b) =>
+    isAna = na(a)
+    isBna = na(b)
+    isAna ? isBna : (isBna ? false : a == b)    
+
+//////////////////////////////////////////////////
+// @function Determines if two text styles are equal.
+// @param a The first TextStyle to compare.
+// @param b The second TextStyle to compare.
+// @returns True if the two TextStyles are equal, false otherwise.
+export equals(TextStyle a, TextStyle b) =>
+    isAna = na(a)
+    isBna = na(b)
+    isAna ? isBna : (isBna ? false :
+      (Color.equals(a.color, b.color) ? (equals(a.size, b.size) ? equals(a.family, b.family) : false) : false))
+
+//////////////////////////////////////////////////
+// @function Determines if two line styles are equal.
+// @param a The first LineStyle to compare.
+// @param b The second LineStyle to compare.
+// @returns True if the two LineStyles are equal, false otherwise.
+export equals(LineStyle a, LineStyle b) =>
+    isAna = na(a)
+    isBna = na(b)
+    isAna ? isBna : (isBna ? false :
+      (Color.equals(a.color, b.color) ? equals(a.width, b.width) : false))
+
+//////////////////////////////////////////////////
+// @function Determines if two alignments are equal.
+// @param a The first CellAlign to compare.
+// @param b The second CellAlign to compare.
+// @returns True if the two CellAlign are equal, false otherwise.
+export equals(CellAlign a, CellAlign b) =>
+    isAna = na(a)
+    isBna = na(b)
+    isAna ? isBna : (isBna ? false :
+      (equals(a.horizontal, b.horizontal) ? equals(a.vertical, b.vertical) : false))
+
+//////////////////////////////////////////////////
+// @function Determines if two cell styles are equal.
+// @param a The first CellStyle to compare.
+// @param b The second CellStyle to compare.
+// @returns True if the two CellStyle are equal, false otherwise.
+export equals(CellStyle a, CellStyle b) =>
+    isAna = na(a)
+    isBna = na(b)
+    isAna ? isBna : (isBna ? false : (
+      Color.equals(a.bgColor, b.bgColor) and
+      equals(a.align, b.align) and
+      equals(a.font, b.font)
+
+//////////////////////////////////////////////////
+// @function Determines if two table style are equal.
+// @param a The first TableStyle to compare.
+// @param b The second TableStyle to compare.
+// @returns True if the two TableStyles are equal, false otherwise.
+export equals(TableStyle a, TableStyle b) =>
+    isAna = na(a)
+    isBna = na(b)
+    isAna ? isBna : (isBna ? false : (
+      Color.equals(a.bgColor, b.bgColor) and
+      equals(a.border, b.border) and
+      equals(a.frame, b.frame))) and
+      equals(a.position, b.position)))
+
+//////////////////////////////////////////////////
+// @function Creates a TextStyle with the same property values as the child but inherits properties from the parent if the child property is na.
+// @param child The child TextStyle to inherit to.
+// @param parent The parent TextStyle to inherit from.
+// @returns The inherited child TextStyle.
+
+//////////////////////////////////////////////////
+//// inherit /////////////////////////////////////
+//////////////////////////////////////////////////
+
+export inherit(TextStyle child, TextStyle parent) =>
+    if na(child)
+        parent
+    else if na(parent)
+        child
+    else
+        color = na(child.color) ? parent.color : child.color
+        size = na(child.size) ? parent.size : child.size
+        family = na(child.family) ? parent.family : child.family
+        result = TextStyle.new(color, size, family)
+        equals(child, result) ? child : result
+        
+//////////////////////////////////////////////////
+// @function Creates a LineStyle with the same property values as the child but inherits properties from the parent if the child property is na.
+// @param child The child LineStyle to inherit to.
+// @param parent The parent LineStyle to inherit from.
+// @returns The inherited child LineStyle.
+export inherit(LineStyle child, LineStyle parent) =>
+    if na(child)
+        parent
+    else if na(parent)
+        child
+    else
+        color = na(child.color) ? parent.color : child.color
+        width = na(child.width) ? parent.width : child.width
+        result = LineStyle.new(color, width)
+        equals(child, result) ? child : result
+
+//////////////////////////////////////////////////
+// @function Creates a CellAlign with the same property values as the child but inherits properties from the parent if the child property is na.
+// @param child The child CellAlign to inherit to.
+// @param parent The parent CellAlign to inherit from.
+// @returns The inherited child CellAlign.
+export inherit(CellAlign child, CellAlign parent) =>
+    if na(child)
+        parent
+    else if na(parent)
+        child
+    else
+        horizontal = na(child.horizontal) ? parent.horizontal : child.horizontal
+        vertical = na(child.vertical) ? parent.vertical : child.vertical
+        result = LineStyle.new(horizontal, vertical)
+        equals(child, result) ? child : result
+
+//////////////////////////////////////////////////
+// @function Creates a CellStyle with the same property values as the child but inherits properties from the parent if the child property is na.
+// @param child The child CellStyle to inherit to.
+// @param parent The parent CellStyle to inherit from.
+// @returns The inherited child CellStyle.
+export inherit(CellStyle child, CellStyle parent) =>
+    if na(child)
+        parent
+    else if na(parent)
+        child
+    else
+        bgColor = na(child.bgColor) ? parent.bgColor : child.bgColor
+        align = inherit(child.align, parent.align)
+        font = inherit(child.font, parent.font)
+        result = CellStyle.new(bgColor, align, font)
+        equals(child, result) ? child : result
+
+//////////////////////////////////////////////////
+// @function Creates a TableStyle with the same property values as the child but inherits properties from the parent if the child property is na.
+// @param child The child TableStyle to inherit to.
+// @param parent The parent TableStyle to inherit from.
+// @returns The inherited child TableStyle.
+export inherit(TableStyle child, TableStyle parent) =>
+    if na(child)
+        parent
+    else if na(parent)
+        child
+    else
+        bgColor = na(child.bgColor) ? parent.bgColor : child.bgColor
+        border = inherit(child.border, parent.border)
+        frame = inherit(child.frame, parent.frame)
+        position = na(child.position) ? parent.position : child.position
+        result = TableStyle.new(bgColor, border, frame, position)
+        equals(child, result) ? child : result
+
+//////////////////////////////////////////////////
+
